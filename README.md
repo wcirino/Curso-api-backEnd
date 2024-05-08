@@ -55,4 +55,8 @@ git clone https://github.com/seu-usuario/nome-do-repositorio.git
 
 A documentação da API está disponível na interface Swagger. Após iniciar a aplicação, acesse:
 
+##Projeto para usar o rabbitMQ
+
+https://github.com/wcirino/projeto-simuladorMQ/tree/master
+
 
