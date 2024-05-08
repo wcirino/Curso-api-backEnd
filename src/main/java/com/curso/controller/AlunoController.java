@@ -16,19 +16,19 @@ public class AlunoController {
     @Autowired
     private AlunoService alunoService;
 
-    @GetMapping
+    @GetMapping("find/all")
     public ResponseEntity<List<AlunoDTO>> listarAlunos() {
         List<AlunoDTO> alunos = alunoService.listarAlunos();
         return new ResponseEntity<>(alunos, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("find/{id}")
     public ResponseEntity<AlunoDTO> obterDetalhesAluno(@PathVariable Long id) {
         AlunoDTO alunoDTO = alunoService.obterDetalhesAluno(id);
         return new ResponseEntity<>(alunoDTO, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("atualiza/{id}")
     public ResponseEntity<AlunoDTO> atualizarAluno(@PathVariable Long id, @RequestBody AlunoDTO alunoDTO) {
         AlunoDTO alunoAtualizado = alunoService.atualizarAluno(id, alunoDTO);
         return new ResponseEntity<>(alunoAtualizado, HttpStatus.OK);

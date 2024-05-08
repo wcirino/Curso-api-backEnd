@@ -16,31 +16,31 @@ public class CursoController {
     @Autowired
     private CursoService cursoService;
 
-    @GetMapping
+    @GetMapping("find/all")
     public ResponseEntity<List<CursoDTO>> listarCursos() {
         List<CursoDTO> cursos = cursoService.listarCursos();
         return new ResponseEntity<>(cursos, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("find/{id}")
     public ResponseEntity<CursoDTO> obterDetalhesCurso(@PathVariable Long id) {
         CursoDTO cursoDTO = cursoService.obterDetalhesCurso(id);
         return new ResponseEntity<>(cursoDTO, HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/cursor/inserir")
     public ResponseEntity<CursoDTO> criarCurso(@RequestBody CursoDTO cursoDTO) {
         CursoDTO novoCurso = cursoService.criarCurso(cursoDTO);
         return new ResponseEntity<>(novoCurso, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("atualizar/{id}")
     public ResponseEntity<CursoDTO> atualizarCurso(@PathVariable Long id, @RequestBody CursoDTO cursoDTO) {
         CursoDTO cursoAtualizado = cursoService.atualizarCurso(id, cursoDTO);
         return new ResponseEntity<>(cursoAtualizado, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> excluirCurso(@PathVariable Long id) {
         cursoService.excluirCurso(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "StatusPagamento")
+@Table(name = "statusPagamento")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

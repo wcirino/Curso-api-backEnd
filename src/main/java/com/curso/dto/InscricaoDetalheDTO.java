@@ -14,7 +14,7 @@ public class InscricaoDetalheDTO {
     private Long inscricaoID;
     private String curso;
     private String aluno;
-    private Long numeroCurso;
+    private Integer numeroCurso;
     private Date dataInscricao;
     private String statusPagamento;
     private Long numMatricula;

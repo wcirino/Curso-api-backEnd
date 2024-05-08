@@ -2,6 +2,7 @@ package com.curso.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.curso.dto.AlunoPorCursoDTO;
 import com.curso.dto.CursoAlunoDTO;
 import com.curso.dto.InscricaoDTO;
+import com.curso.dto.InscricaoDetalheDTO;
 import com.curso.service.InscricaoService;
 
 @RestController
@@ -26,7 +28,7 @@ public class InscricaoController {
     @Autowired
     private InscricaoService inscricaoService;
 
-    @PostMapping
+    @PostMapping("/aluno/inserir")
     public ResponseEntity<InscricaoDTO> inscreverAlunoCurso(@RequestBody InscricaoDTO inscricaoDTO) {
         InscricaoDTO novaInscricao = inscricaoService.inscreverAlunoCurso(inscricaoDTO);
         return new ResponseEntity<>(novaInscricao, HttpStatus.CREATED);
@@ -38,36 +40,40 @@ public class InscricaoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/curso/{cursoId}")
-    public ResponseEntity<Page<InscricaoDTO>> listarInscricoesPorCurso(
-            @PathVariable Long cursoId,
+    @GetMapping("/lista-inscricao")
+    public ResponseEntity<Page<InscricaoDetalheDTO>> listarInscricoesPorCurso(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Pageable pageable) {
-        Page<InscricaoDTO> inscricoes = inscricaoService.listarInscricoesCurso(cursoId, pageable);
+    	pageable = PageRequest.of(page, size);
+        Page<InscricaoDetalheDTO> inscricoes = inscricaoService.listarInscricoesCurso(pageable);
         return new ResponseEntity<>(inscricoes, HttpStatus.OK);
     }
 
 
-    @GetMapping("/aluno/{alunoId}/cursos")
+    @GetMapping("/aluno/find")
     public ResponseEntity<Page<CursoAlunoDTO>> listarCursosDoAluno(
-            @PathVariable Long alunoId,
+            @RequestParam(required = false) Long alunoId,
+            @RequestParam(required = false) String nomeAluno, 
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Pageable pageable) {
-        Page<CursoAlunoDTO> cursos = inscricaoService.listarCursosDoAluno(alunoId, pageable);
+        pageable = PageRequest.of(page, size);
+        Page<CursoAlunoDTO> cursos = inscricaoService.listarCursosDoAluno(alunoId, nomeAluno, pageable); 
         return new ResponseEntity<>(cursos, HttpStatus.OK);
     }
 
-
-    @GetMapping("/curso/{cursoId}/alunos")
+    @GetMapping("/curso/find")
     public ResponseEntity<Page<AlunoPorCursoDTO>> listarAlunosPorCurso(
-            @PathVariable Long cursoId,
+            @RequestParam(required = false) Long cursoId,
+            @RequestParam(required = false) String tituloCurso, 
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Pageable pageable) {
-        Page<AlunoPorCursoDTO> alunos = inscricaoService.listarAlunosPorCurso(cursoId, pageable);
+        pageable = PageRequest.of(page, size);
+        Page<AlunoPorCursoDTO> alunos = inscricaoService.listarAlunosPorCurso(cursoId, tituloCurso, pageable);
         return new ResponseEntity<>(alunos, HttpStatus.OK);
     }
+
 
 }

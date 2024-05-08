@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.curso.dto.AlunoPorCursoDTO;
 import com.curso.dto.CursoAlunoDTO;
 import com.curso.dto.InscricaoDTO;
+import com.curso.dto.InscricaoDetalheDTO;
 import com.curso.entity.Inscricao;
 import com.curso.repository.InscricaoRepository;
 import com.curso.repository.custom.InscricaoCustomRepository;
@@ -56,19 +57,19 @@ public class InscricaoService {
                 .collect(Collectors.toList());
     }
     
-    public Page<InscricaoDTO> listarInscricoesCurso(Long cursoId, Pageable pageable) {
-        return inscricaoCustomRepository.listarInscricoes(pageable)
-                .map(inscricao -> modelMapper.map(inscricao, InscricaoDTO.class));
+    public Page<InscricaoDetalheDTO> listarInscricoesCurso(Pageable pageable) {
+        return inscricaoCustomRepository.listarInscricoes(pageable);
     }
 
-    public Page<CursoAlunoDTO> listarCursosDoAluno(Long alunoId, Pageable pageable) {
-        return inscricaoCustomRepository.listarCursosDoAluno(alunoId, pageable)
+    public Page<CursoAlunoDTO> listarCursosDoAluno(Long alunoId, String nomeAluno, Pageable pageable) {
+        return inscricaoCustomRepository.listarCursosDoAluno(alunoId, nomeAluno, pageable)
                 .map(curso -> modelMapper.map(curso, CursoAlunoDTO.class));
     }
 
-    public Page<AlunoPorCursoDTO> listarAlunosPorCurso(Long cursoId, Pageable pageable) {
-        return inscricaoCustomRepository.listarAlunosPorCurso(cursoId, pageable)
+    public Page<AlunoPorCursoDTO> listarAlunosPorCurso(Long cursoId, String tituloCurso, Pageable pageable) {
+        return inscricaoCustomRepository.listarAlunosPorCurso(cursoId, tituloCurso, pageable)
                 .map(aluno -> modelMapper.map(aluno, AlunoPorCursoDTO.class));
     }
+
 }
 

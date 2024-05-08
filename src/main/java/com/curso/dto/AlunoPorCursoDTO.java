@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AlunoPorCursoDTO {
 
-    private Long alunoID;
+    private Integer alunoID;
     private String nomeAluno;
     private Long numMatricula;
     private String tituloCurso;

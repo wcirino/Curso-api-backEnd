@@ -1,7 +1,6 @@
 package com.curso.repository.custom;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,16 +33,16 @@ public class InscricaoCustomRepository {
                 "C.id AS NumeroCurso, " +
                 "I.DataInscricao, " +
                 "S.Nome AS StatusPagamento, " +
-                "A.NumMatricula, " +
+                "A.num_matricula, " +
                 "M.Nome AS MetodoPagamento, " +
                 "I.DataIniciarCurso, " +
                 "I.ValorPago " +
                 "FROM " +
-                "Inscricoes I " +
-                "INNER JOIN Curso C ON I.CursoID = C.id " +
-                "INNER JOIN Aluno A ON I.AlunoID = A.id " +
-                "INNER JOIN StatusPagamento S ON I.StatusPagamentoID = S.ID " +
-                "INNER JOIN MetodoPagamento M ON I.MetodoPagamentoID = M.ID";
+                "inscricoes I " +
+                "INNER JOIN curso C ON I.CursoID = C.id " +
+                "INNER JOIN aluno A ON I.AlunoID = A.id " +
+                "INNER JOIN status_pagamento S ON I.StatusPagamentoID = S.ID " +
+                "INNER JOIN metodo_pagamento M ON I.MetodoPagamentoID = M.ID";
 
         Query query = entityManager.createNativeQuery(sql);
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
@@ -56,7 +55,7 @@ public class InscricaoCustomRepository {
             inscricao.setInscricaoID((Long) row[0]);
             inscricao.setCurso((String) row[1]);
             inscricao.setAluno((String) row[2]);
-            inscricao.setNumeroCurso((Long) row[3]);
+            inscricao.setNumeroCurso((Integer) row[3]);
             inscricao.setDataInscricao((Date) row[4]);
             inscricao.setStatusPagamento((String) row[5]);
             inscricao.setNumMatricula((Long) row[6]);
@@ -69,26 +68,42 @@ public class InscricaoCustomRepository {
         return new PageImpl<>(result, pageable, result.size());
     }
 
-    public Page<CursoAlunoDTO> listarCursosDoAluno(Long alunoId, Pageable pageable) {
-        String sql = "SELECT " +
-                "C.id AS CursoID, " +
-                "C.Titulo AS Curso, " +
-                "A.Nome AS NomeAluno, " +
-                "A.NumMatricula AS NumMatricula, " +
-                "C.Descricao AS Descricao, " +
-                "C.DuracaoHora AS DuracaoHora, " +
-                "C.Instrutor AS Instrutor, " +
-                "C.Categoria AS Categoria, " +
-                "C.NivelDificuldade AS NivelDificuldade " +
-                "FROM " +
-                "Curso C " +
-                "INNER JOIN Inscricoes I ON C.id = I.CursoID " +
-                "INNER JOIN Aluno A ON I.AlunoID = A.id " +
-                "WHERE " +
-                "I.AlunoID = :alunoId";
+    public Page<CursoAlunoDTO> listarCursosDoAluno(Long alunoId, String nomeAluno, Pageable pageable) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT ")
+                  .append("C.id AS CursoID, ")
+                  .append("C.Titulo AS Curso, ")
+                  .append("A.Nome AS NomeAluno, ")
+                  .append("A.num_matricula AS NumMatricula, ")
+                  .append("C.Descricao AS Descricao, ")
+                  .append("C.DuracaoHora AS DuracaoHora, ")
+                  .append("C.Instrutor AS Instrutor, ")
+                  .append("C.Categoria AS Categoria, ")
+                  .append("C.NivelDificuldade AS NivelDificuldade ")
+                  .append("FROM ")
+                  .append("curso C ")
+                  .append("INNER JOIN inscricoes I ON C.id = I.CursoID ")
+                  .append("INNER JOIN aluno A ON I.AlunoID = A.id ")
+                  .append("WHERE 1=1 ");
 
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("alunoId", alunoId);
+        if (alunoId != null) {
+            sqlBuilder.append("AND I.AlunoID = :alunoId ");
+        }
+
+        if (nomeAluno != null && !nomeAluno.isEmpty()) {
+            sqlBuilder.append("AND A.Nome LIKE :nomeAluno ");
+        }
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+
+        if (alunoId != null) {
+            query.setParameter("alunoId", alunoId);
+        }
+
+        if (nomeAluno != null && !nomeAluno.isEmpty()) {
+            query.setParameter("nomeAluno", "%" + nomeAluno + "%");
+        }
+
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
         query.setMaxResults(pageable.getPageSize());
 
@@ -96,10 +111,10 @@ public class InscricaoCustomRepository {
         List<Object[]> rows = query.getResultList();
         for (Object[] row : rows) {
             CursoAlunoDTO cursoAluno = new CursoAlunoDTO();
-            cursoAluno.setCursoID(((BigInteger) row[0]).longValue());
+            cursoAluno.setCursoID(((Integer) row[0]).longValue());
             cursoAluno.setCurso((String) row[1]);
             cursoAluno.setNomeAluno((String) row[2]);
-            cursoAluno.setNumMatricula(((BigInteger) row[3]).longValue());
+            cursoAluno.setNumMatricula(((Long) row[3]).longValue());
             cursoAluno.setDescricao((String) row[4]);
             cursoAluno.setDuracaoHora((Integer) row[5]);
             cursoAluno.setInstrutor((String) row[6]);
@@ -111,22 +126,42 @@ public class InscricaoCustomRepository {
         return new PageImpl<>(result, pageable, result.size());
     }
 
-    public Page<AlunoPorCursoDTO> listarAlunosPorCurso(Long cursoId, Pageable pageable) {
-        String sql = "SELECT " +
-                "A.id AS AlunoID, " +
-                "A.Nome AS NomeAluno, " +
-                "A.NumMatricula AS NumMatricula, " +
-                "C.Titulo AS TituloCurso, " +
-                "C.Descricao AS DescricaoCurso " +
-                "FROM " +
-                "Aluno A " +
-                "INNER JOIN Inscricoes I ON A.id = I.AlunoID " +
-                "INNER JOIN Curso C ON I.CursoID = C.id " +
-                "WHERE " +
-                "I.CursoID = :cursoId";
 
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("cursoId", cursoId);
+    public Page<AlunoPorCursoDTO> listarAlunosPorCurso(Long cursoId, String tituloCurso, Pageable pageable) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT ")
+                  .append("A.id AS AlunoID, ")
+                  .append("A.Nome AS NomeAluno, ")
+                  .append("A.num_matricula AS NumMatricula, ")
+                  .append("C.Titulo AS TituloCurso, ")
+                  .append("C.Descricao AS DescricaoCurso ")
+                  .append("FROM ")
+                  .append("aluno A ")
+                  .append("INNER JOIN inscricoes I ON A.id = I.AlunoID ")
+                  .append("INNER JOIN curso C ON I.CursoID = C.id ")
+                  .append("WHERE ");
+
+        if (cursoId != null) {
+            sqlBuilder.append("I.CursoID = :cursoId ");
+        }
+
+        if (tituloCurso != null && !tituloCurso.isEmpty()) {
+            if (cursoId != null) {
+                sqlBuilder.append("AND ");
+            }
+            sqlBuilder.append("C.Titulo LIKE :tituloCurso ");
+        }
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+
+        if (cursoId != null) {
+            query.setParameter("cursoId", cursoId);
+        }
+
+        if (tituloCurso != null && !tituloCurso.isEmpty()) {
+            query.setParameter("tituloCurso", "%" + tituloCurso + "%");
+        }
+
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
         query.setMaxResults(pageable.getPageSize());
 
@@ -134,7 +169,7 @@ public class InscricaoCustomRepository {
 
         List<AlunoPorCursoDTO> result = resultList.stream().map(row -> {
             AlunoPorCursoDTO dto = new AlunoPorCursoDTO();
-            dto.setAlunoID((Long) row[0]);
+            dto.setAlunoID((Integer) row[0]);
             dto.setNomeAluno((String) row[1]);
             dto.setNumMatricula((Long) row[2]);
             dto.setTituloCurso((String) row[3]);
@@ -144,4 +179,6 @@ public class InscricaoCustomRepository {
 
         return new PageImpl<>(result, pageable, result.size());
     }
+
+
 }
