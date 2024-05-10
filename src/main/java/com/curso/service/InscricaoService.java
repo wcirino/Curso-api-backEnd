@@ -11,9 +11,15 @@ import org.springframework.stereotype.Service;
 
 import com.curso.dto.AlunoPorCursoDTO;
 import com.curso.dto.CursoAlunoDTO;
+import com.curso.dto.EmailDTO;
 import com.curso.dto.InscricaoDTO;
 import com.curso.dto.InscricaoDetalheDTO;
+import com.curso.dto.StatusPagamentoMQ;
+import com.curso.entity.Curso;
 import com.curso.entity.Inscricao;
+import com.curso.mq.publisher.CancelarMqPublisher;
+import com.curso.mq.publisher.EmailMqPublisher;
+import com.curso.mq.publisher.InscricaoMqPublisher;
 import com.curso.repository.InscricaoRepository;
 import com.curso.repository.custom.InscricaoCustomRepository;
 
@@ -25,19 +31,33 @@ public class InscricaoService {
     
     @Autowired
     private InscricaoCustomRepository inscricaoCustomRepository;
+    
+    @Autowired
+    private EmailMqPublisher emailMqPublisher;
+    
+    @Autowired
+    private CancelarMqPublisher cancelarMqpublisher;
+    
+    @Autowired
+    private InscricaoMqPublisher mqInscricao;
 
     @Autowired
     private ModelMapper modelMapper;
 
-    public InscricaoDTO inscreverAlunoCurso(InscricaoDTO inscricaoDTO) {
+    public InscricaoDTO inscreverAlunoCurso(InscricaoDTO inscricaoDTO) throws Exception {
         Inscricao inscricao = modelMapper.map(inscricaoDTO, Inscricao.class);
         Inscricao novaInscricao = inscricaoRepository.save(inscricao);
+        mqInscricao.envioInscricao(inscricaoDTO, "Willyan", "Curso de java");
+        emailMqPublisher.envioEmail(this.dtoEmail("Estudo rabbitMQ", "Willyan Cirino", novaInscricao));
         return modelMapper.map(novaInscricao, InscricaoDTO.class);
     }
 
-    public void cancelarInscricao(Long id) {
+    public void cancelarInscricao(Long id) throws Exception {
         if (inscricaoRepository.existsById(id)) {
             inscricaoRepository.deleteById(id);
+            cancelarMqpublisher.envioCancelamentoInscricao(id, "Willyan Fernando", "Curso de exemplo");
+            emailMqPublisher.envioEmail(this.dto_Email("Curso do projeto", "Willyan Cirino"));
+            
         } else {
             throw new RuntimeException("Inscrição não encontrada para o ID: " + id);
         }
@@ -70,6 +90,41 @@ public class InscricaoService {
         return inscricaoCustomRepository.listarAlunosPorCurso(cursoId, tituloCurso, pageable)
                 .map(aluno -> modelMapper.map(aluno, AlunoPorCursoDTO.class));
     }
+    
+    public EmailDTO dtoEmail(String tituloCurso,String aluno,Inscricao insc) {
+        
+    	return EmailDTO.builder()
+    			.assunto("Inscrição no curso")
+    			.corpo("Curso :"+tituloCurso+ "Foi Inscrito com sucesso \n : aluno"+aluno+ "dados insc: "+ insc.toString())
+    			.emailRemetente("email@email.com.br")
+    			.titulo(tituloCurso)
+    			.nome("Curso atualizando")
+    			.build();
+    }
+    
+	public EmailDTO dto_Email(String tituloCurso, String aluno) {
+
+		return EmailDTO.builder().assunto("Deletar aluno do curso")
+				.corpo("Curso :" + tituloCurso + " : aluno" + aluno + "dados insc: ")
+				.emailRemetente("email@email.com.br").titulo(tituloCurso).nome("Curso delete").build();
+	}
+
+	public void atualizarStatusPagamento(StatusPagamentoMQ statusPagamento) {
+
+		Long inscricaoId = statusPagamento.getId().longValue();
+		Inscricao inscricao = inscricaoRepository.findById(inscricaoId)
+				.orElseThrow(() -> new RuntimeException("Inscrição não encontrada para o ID: " + inscricaoId));
+
+		inscricao.setStatusPagamentoID(statusPagamento.getStatusPagamentoId());
+		inscricao.setMetodoPagamentoID(statusPagamento.getMetodoPagamentoId());
+
+
+		inscricaoRepository.save(inscricao);
+	}
+	
+	public InscricaoDetalheDTO buscarInscricaoPorId(Long inscricaoId) {
+		return inscricaoCustomRepository.buscarInscricaoPorId(inscricaoId);
+	}
 
 }
 

@@ -33,10 +33,10 @@ public class Inscricao {
     @Column(name = "data_inscricao")
     private Date dataInscricao;
 
-    @Column(name = "status_pagamento_id")
+    @Column(name = "status_pagamento")
     private Integer statusPagamentoID;
 
-    @Column(name = "metodo_pagamento_id")
+    @Column(name = "metodo_pagamento")
     private Integer metodoPagamentoID;
 
     @Column(name = "valor_pago", precision = 10, scale = 2)

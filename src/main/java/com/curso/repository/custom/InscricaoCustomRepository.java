@@ -41,8 +41,8 @@ public class InscricaoCustomRepository {
                 "inscricoes I " +
                 "INNER JOIN curso C ON I.CursoID = C.id " +
                 "INNER JOIN aluno A ON I.AlunoID = A.id " +
-                "INNER JOIN status_pagamento S ON I.StatusPagamentoID = S.ID " +
-                "INNER JOIN metodo_pagamento M ON I.MetodoPagamentoID = M.ID";
+                "INNER JOIN status_pagamento S ON I.status_pagamento = S.ID " +
+                "INNER JOIN metodo_pagamento M ON I.metodo_pagamento = M.ID";
 
         Query query = entityManager.createNativeQuery(sql);
         query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
@@ -178,6 +178,46 @@ public class InscricaoCustomRepository {
         }).collect(Collectors.toList());
 
         return new PageImpl<>(result, pageable, result.size());
+    }
+    
+    public InscricaoDetalheDTO buscarInscricaoPorId(Long inscricaoId) {
+        String sql = "SELECT " +
+                "I.id AS InscricaoID, " +
+                "C.Titulo AS Curso, " +
+                "A.Nome AS Aluno, " +
+                "C.id AS NumeroCurso, " +
+                "I.DataInscricao, " +
+                "S.Nome AS StatusPagamento, " +
+                "A.num_matricula, " +
+                "M.Nome AS MetodoPagamento, " +
+                "I.DataIniciarCurso, " +
+                "I.ValorPago " +
+                "FROM " +
+                "inscricoes I " +
+                "INNER JOIN curso C ON I.CursoID = C.id " +
+                "INNER JOIN aluno A ON I.AlunoID = A.id " +
+                "INNER JOIN status_pagamento S ON I.status_pagamento = S.ID " +
+                "INNER JOIN metodo_pagamento M ON I.metodo_pagamento = M.ID " +
+                "WHERE I.id = :inscricaoId";
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("inscricaoId", inscricaoId);
+
+        Object[] row = (Object[]) query.getSingleResult();
+
+        InscricaoDetalheDTO inscricao = new InscricaoDetalheDTO();
+        inscricao.setInscricaoID((Long) row[0]);
+        inscricao.setCurso((String) row[1]);
+        inscricao.setAluno((String) row[2]);
+        inscricao.setNumeroCurso((Integer) row[3]);
+        inscricao.setDataInscricao((Date) row[4]);
+        inscricao.setStatusPagamento((String) row[5]);
+        inscricao.setNumMatricula((Long) row[6]);
+        inscricao.setMetodoPagamento((String) row[7]);
+        inscricao.setDataIniciarCurso((Date) row[8]);
+        inscricao.setValorPago((BigDecimal) row[9]);
+
+        return inscricao;
     }
 
 

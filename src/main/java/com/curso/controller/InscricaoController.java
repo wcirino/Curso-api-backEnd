@@ -29,13 +29,13 @@ public class InscricaoController {
     private InscricaoService inscricaoService;
 
     @PostMapping("/aluno/inserir")
-    public ResponseEntity<InscricaoDTO> inscreverAlunoCurso(@RequestBody InscricaoDTO inscricaoDTO) {
+    public ResponseEntity<InscricaoDTO> inscreverAlunoCurso(@RequestBody InscricaoDTO inscricaoDTO) throws Exception {
         InscricaoDTO novaInscricao = inscricaoService.inscreverAlunoCurso(inscricaoDTO);
         return new ResponseEntity<>(novaInscricao, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelarInscricao(@PathVariable Long id) {
+    public ResponseEntity<Void> cancelarInscricao(@PathVariable Long id) throws Exception {
         inscricaoService.cancelarInscricao(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -73,6 +73,16 @@ public class InscricaoController {
         pageable = PageRequest.of(page, size);
         Page<AlunoPorCursoDTO> alunos = inscricaoService.listarAlunosPorCurso(cursoId, tituloCurso, pageable);
         return new ResponseEntity<>(alunos, HttpStatus.OK);
+    }
+    
+    @GetMapping("matricula/{id}")
+    public ResponseEntity<InscricaoDetalheDTO> buscarInscricaoPorId(@PathVariable Long id) {
+        InscricaoDetalheDTO inscricao = inscricaoService.buscarInscricaoPorId(id);
+        if (inscricao != null) {
+            return new ResponseEntity<>(inscricao, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 

@@ -35,7 +35,7 @@ public class CursoController {
     }
 
     @PutMapping("atualizar/{id}")
-    public ResponseEntity<CursoDTO> atualizarCurso(@PathVariable Long id, @RequestBody CursoDTO cursoDTO) {
+    public ResponseEntity<CursoDTO> atualizarCurso(@PathVariable Long id, @RequestBody CursoDTO cursoDTO) throws Exception {
         CursoDTO cursoAtualizado = cursoService.atualizarCurso(id, cursoDTO);
         return new ResponseEntity<>(cursoAtualizado, HttpStatus.OK);
     }
